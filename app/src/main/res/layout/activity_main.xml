@@ -6,13 +6,39 @@
     android:layout_height="match_parent"
     tools:context=".view.MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <EditText
+        android:id="@+id/etId"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
+        android:layout_margin="30dp"
+        android:hint="Enter your ID"
+        android:inputType="number"
+        android:maxLength="8"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toTopOf="@+id/btn_check_id"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_editor_absoluteX="30dp" />
+
+    <TextView
+        android:id="@+id/tvFileStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/etId"
+        android:layout_margin="30dp"
+        android:text="Challenge"
+    />
+    <Button
+        android:id="@+id/btn_check_id"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Check ID"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_margin="30dp"
+        android:enabled="false"
+        />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
