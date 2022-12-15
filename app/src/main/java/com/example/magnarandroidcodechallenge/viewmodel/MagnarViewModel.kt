@@ -5,26 +5,26 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.magnarandroidcodechallenge.api.RetrofitInstance
-import com.example.magnarandroidcodechallenge.api.RetrofitService
+import androidx.lifecycle.viewModelScope
+import com.example.magnarandroidcodechallenge.repository.MagnarRepository
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.opencsv.CSVReader
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import okhttp3.ResponseBody
-import retrofit2.Callback
 import java.io.*
-import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
-
-class MagnarViewModel(
+@HiltViewModel
+class MagnarViewModel @Inject constructor (
     private val fileDir: File,
-    private val sharedPreferences: SharedPreferences
+    private val sharedPreferences: SharedPreferences,
+    private val repository: MagnarRepository
 ): ViewModel() {
 
     private var dirPath: String = "$fileDir/CSVFiles"
@@ -37,7 +37,7 @@ class MagnarViewModel(
     val csvData: LiveData<List<String>> get() = _csvData
 
     private val lastUpdated = Date(sharedPreferences.getLong("lastUpdated", 0))
-    // 16693457
+
     init {
         val dirFile = File(dirPath)
         if (!dirFile.exists()) {
@@ -58,31 +58,12 @@ class MagnarViewModel(
         else{
             downloadFile()
         }
-
     }
-    fun downloadFile() {
+    private fun downloadFile() {
+        isFileDownloaded.postValue(false)
         CoroutineScope(Dispatchers.IO).launch {
-            val call = RetrofitInstance.getRetrofitInstance().create(RetrofitService::class.java)
-                call.downloadFile().enqueue(object : Callback<ResponseBody> {
-                override fun onResponse(call: retrofit2.Call<ResponseBody>, response: retrofit2.Response<ResponseBody>) {
-                    if (response.isSuccessful) {
-
-                        Log.d("DownloadFile", "Server contacted and has file")
-
-                        val file = response.body()?.byteStream()
-                        file?.let {
-                            writeToFile(it)
-                        }?: run {
-                            isFileDownloaded.postValue(false)
-                        }
-                        isFileDownloaded.postValue(true)
-                    }
-                }
-
-                override fun onFailure(call: retrofit2.Call<ResponseBody>, t: Throwable) {
-                    isFileDownloaded.postValue(false)
-                }
-            })
+            val data = repository.downloadFile()
+            writeToFile(data)
         }
     }
 
@@ -92,10 +73,13 @@ class MagnarViewModel(
             inputStream.copyTo(outputStream)
 
             sharedPreferences.edit().putLong("lastUpdated", Date().time).apply()
-            CoroutineScope(Dispatchers.IO).launch {
-                val csvData = async { readFileData() }
-                _csvData.postValue(csvData.await())
+
+            viewModelScope.launch {
+                val csvData = readFileData()
+                _csvData.postValue(csvData)
+                isFileDownloaded.postValue(true)
             }
+
         } catch (e: IOException) {
             e.printStackTrace()
         }
@@ -133,5 +117,6 @@ class MagnarViewModel(
         val type = object : TypeToken<List<String>>() {}.type
         val list = gson.fromJson<List<String>>(json, type)
         _csvData.postValue(list)
+        isFileDownloaded.postValue(true)
     }
 }

@@ -6,6 +6,17 @@
     android:layout_height="match_parent"
     tools:context=".view.MainActivity">
 
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="30dp"
+        app:layout_constraintBottom_toTopOf="@id/etId"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:visibility="gone"
+        />
+
     <EditText
         android:id="@+id/etId"
         android:layout_width="match_parent"
@@ -21,13 +32,13 @@
 
     <TextView
         android:id="@+id/tvFileStatus"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/etId"
         android:layout_margin="30dp"
         android:text="Challenge"
-    />
+        app:layout_constraintBottom_toTopOf="@id/etId"
+        app:layout_constraintStart_toEndOf="@+id/progressBar"
+        app:layout_constraintTop_toTopOf="parent" />
     <Button
         android:id="@+id/btn_check_id"
         android:layout_width="match_parent"
